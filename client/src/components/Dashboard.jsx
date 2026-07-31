@@ -4,8 +4,8 @@ import {
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
 } from 'recharts';
 
-const SLEEP_MIN  = 6;
-const SLEEP_MAX  = 9;
+const SLEEP_MIN = 6;
+const SLEEP_MAX = 9;
 const SLEEP_GOAL = 8;
 
 const card = {
@@ -53,6 +53,25 @@ const statLbl = {
 
 const MOOD_LABELS = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 const LBS_TO_KG = 0.453592;
+
+// Height: 5'10" = 70 inches
+const HEIGHT_IN = 70;
+
+const BMI_RANGES = [
+  { label: 'Underweight', max: 18.5, color: '#60a5fa' },
+  { label: 'Normal',      max: 25,   color: '#4ade80' },
+  { label: 'Overweight',  max: 30,   color: '#fbbf24' },
+  { label: 'Obese',       max: 999,  color: '#f87171' },
+];
+
+function calcBMI(weightLbs) {
+  if (!weightLbs) return null;
+  return ((parseFloat(weightLbs) * 703) / (HEIGHT_IN * HEIGHT_IN)).toFixed(1);
+}
+
+function getBMICategory(bmi) {
+  return BMI_RANGES.find((r) => bmi < r.max) || BMI_RANGES[3];
+}
 
 const unitToggle = (active) => ({
   padding: '3px 8px',
@@ -115,6 +134,14 @@ export default function Dashboard() {
   }));
 
   const workoutDays = logs.filter((r) => r.worked_out).length;
+  const latestWeight = logs.find((r) => r.weight)?.weight;
+  const currentBMI = calcBMI(latestWeight);
+  const bmiCategory = currentBMI ? getBMICategory(parseFloat(currentBMI)) : null;
+
+  // BMI scale: clamp display between 15–40
+  const bmiPos = currentBMI
+    ? Math.min(Math.max(((parseFloat(currentBMI) - 15) / 25) * 100, 0), 100)
+    : null;
 
   return (
     <div>
@@ -132,6 +159,52 @@ export default function Dashboard() {
           <div style={statLbl}>Workouts</div>
         </div>
       </div>
+
+      {currentBMI && (
+        <div style={card}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+            <div style={label}>BMI <span style={{ color: '#475569', fontSize: 11, fontWeight: 400, textTransform: 'none' }}>· 5′10″</span></div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: bmiCategory.color }}>{currentBMI}</span>
+              <span style={{ fontSize: 13, color: bmiCategory.color, fontWeight: 600 }}>{bmiCategory.label}</span>
+            </div>
+          </div>
+
+          {/* BMI scale bar */}
+          <div style={{ position: 'relative', height: 10, borderRadius: 4, overflow: 'hidden', display: 'flex', gap: 2, marginBottom: 6 }}>
+            <div style={{ flex: 18.5 - 15, background: '#60a5fa', borderRadius: '4px 0 0 4px' }} />
+            <div style={{ flex: 25 - 18.5, background: '#4ade80', outline: '2px solid #0f172a' }} />
+            <div style={{ flex: 30 - 25, background: '#fbbf24', outline: '2px solid #0f172a' }} />
+            <div style={{ flex: 40 - 30, background: '#f87171', borderRadius: '0 4px 4px 0', outline: '2px solid #0f172a' }} />
+          </div>
+          {/* Marker */}
+          <div style={{ position: 'relative', height: 12, marginBottom: 8 }}>
+            <div style={{
+              position: 'absolute',
+              left: `${bmiPos}%`,
+              transform: 'translateX(-50%)',
+              width: 2,
+              height: 12,
+              background: '#f1f5f9',
+              borderRadius: 1,
+            }} />
+          </div>
+
+          {/* Range labels */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#475569' }}>
+            {BMI_RANGES.map((r) => (
+              <span key={r.label} style={{ color: r.color }}>{r.label}</span>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#334155', marginTop: 2 }}>
+            <span>15</span>
+            <span>18.5</span>
+            <span>25</span>
+            <span>30</span>
+            <span>40</span>
+          </div>
+        </div>
+      )}
 
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -181,7 +254,7 @@ export default function Dashboard() {
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[1, 5]} ticks={[1,2,3,4,5]} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} />
             <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} />
             <Line type="monotone" dataKey="mood" stroke="#4ade80" dot={false} strokeWidth={2} connectNulls />
           </LineChart>
