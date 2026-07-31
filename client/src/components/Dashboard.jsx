@@ -52,6 +52,18 @@ const statLbl = {
 };
 
 const MOOD_LABELS = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
+const LBS_TO_KG = 0.453592;
+
+const unitToggle = (active) => ({
+  padding: '3px 8px',
+  borderRadius: 6,
+  border: 'none',
+  background: active ? '#38bdf8' : 'transparent',
+  color: active ? '#0f172a' : '#64748b',
+  fontWeight: 600,
+  fontSize: 12,
+  cursor: 'pointer',
+});
 
 function avg(arr, key) {
   const vals = arr.map((r) => r[key]).filter((v) => v != null);
@@ -76,6 +88,7 @@ function streak(logs) {
 export default function Dashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [weightUnit, setWeightUnit] = useState('lbs');
 
   useEffect(() => {
     fetch('/api/logs')
@@ -87,9 +100,15 @@ export default function Dashboard() {
   if (loading) return <p style={{ color: '#94a3b8' }}>Loading...</p>;
   if (!logs.length) return <p style={{ color: '#94a3b8' }}>No data yet — start logging!</p>;
 
+  const toDisplayWeight = (lbs) => {
+    if (lbs == null) return null;
+    const val = weightUnit === 'kg' ? parseFloat(lbs) * LBS_TO_KG : parseFloat(lbs);
+    return parseFloat(val.toFixed(1));
+  };
+
   const chartData = [...logs].reverse().map((r) => ({
-    date: r.log_date.slice(5), // MM-DD
-    weight: r.weight ? parseFloat(r.weight) : null,
+    date: r.log_date.slice(5),
+    weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
     mood: r.mood,
     water: r.water_cups,
@@ -115,13 +134,19 @@ export default function Dashboard() {
       </div>
 
       <div style={card}>
-        <div style={label}>Weight (lbs)</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={label}>Weight</div>
+          <div style={{ display: 'flex', background: '#0f172a', borderRadius: 6, padding: 2 }}>
+            <button style={unitToggle(weightUnit === 'lbs')} onClick={() => setWeightUnit('lbs')}>lbs</button>
+            <button style={unitToggle(weightUnit === 'kg')} onClick={() => setWeightUnit('kg')}>kg</button>
+          </div>
+        </div>
         <ResponsiveContainer width="100%" height={160}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={['auto', 'auto']} />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={['auto', 'auto']} unit={weightUnit === 'kg' ? 'k' : ''} />
+            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} ${weightUnit}`]} />
             <Line type="monotone" dataKey="weight" stroke="#38bdf8" dot={false} strokeWidth={2} connectNulls />
           </LineChart>
         </ResponsiveContainer>
@@ -178,7 +203,7 @@ export default function Dashboard() {
             }}
           >
             <span style={{ color: '#94a3b8' }}>{r.log_date}</span>
-            <span>{r.weight ? `${r.weight} lbs` : '—'}</span>
+            <span>{r.weight ? `${toDisplayWeight(r.weight)} ${weightUnit}` : '—'}</span>
             <span>{r.sleep_hours ? `${r.sleep_hours}h` : '—'}</span>
             <span>{r.mood ? MOOD_LABELS[r.mood] : '—'}</span>
             <span>{r.worked_out ? '🏋️' : '—'}</span>
