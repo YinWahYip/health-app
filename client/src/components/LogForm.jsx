@@ -1,5 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+const TOOLTIP_CSS = `
+@keyframes tipIn {
+  0%   
+  { opacity: 0; transform: translateX(-50%) translateY(-4px) scale(0.95); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1); }
+}
+.tip-bubble {
+  animation: tipIn 0.18s ease-out forwards;
+}
+`;
+
 const BARREL_ROLL_CSS = `
 @keyframes barrelRoll {
   0%   { transform: rotate(0deg) scale(1); }
@@ -24,19 +35,69 @@ const today = () => new Date().toISOString().split('T')[0];
 
 const KG_TO_LBS = 2.20462;
 
+function Tip({ text }) {
+  const [pos, setPos] = useState(null);
+  const iconRef = useRef(null);
+
+  const handleEnter = () => {
+    if (iconRef.current) {
+      const r = iconRef.current.getBoundingClientRect();
+      setPos({ x: r.left + r.width / 2, y: r.top - 8 });
+    }
+  };
+
+  return (
+    <span
+      ref={iconRef}
+      style={{ position: 'relative', display: 'inline-block', marginLeft: 5, verticalAlign: 'middle', cursor: 'default' }}
+      onMouseEnter={handleEnter}
+      onMouseLeave={() => setPos(null)}
+    >
+      <span style={{ fontSize: 13, color: '#38bdf8', fontWeight: 700, lineHeight: 1 }}>ⓘ</span>
+      {pos && (
+        <span
+          className="tip-bubble"
+          style={{
+            position: 'fixed',
+            left: pos.x,
+            top: pos.y,
+            transform: 'translateX(-50%) translateY(-100%)',
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            color: '#e2e8f0',
+            fontSize: 14,
+            fontWeight: 500,
+            padding: '10px 16px',
+            borderRadius: 10,
+            maxWidth: 240,
+            whiteSpace: 'normal',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            border: '1px solid #38bdf8',
+            zIndex: 999,
+            pointerEvents: 'none',
+            lineHeight: 1.5,
+            textAlign: 'center',
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
 const field = {
   label: { display: 'block', fontSize: 13, color: '#94a3b8', marginBottom: 4 },
   input: {
     width: '100%',
-    padding: '10px 12px',
-    borderRadius: 8,
+    padding: '14px 16px',
+    borderRadius: 10,
     border: '1px solid #1e293b',
     background: '#1e293b',
     color: '#f1f5f9',
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 16,
   },
-  
+
   row: { display: 'flex', gap: 12 },
   half: { flex: 1 },
   unitToggle: (active) => ({
@@ -106,6 +167,8 @@ export default function LogForm() {
     water_cups: '',
     worked_out: false,
     steps: '',
+    screen_time: '',
+    minutes_walked: '',
     notes: '',
   });
   const [weightUnit, setWeightUnit] = useState('lbs'); // 'lbs' | 'kg'
@@ -121,6 +184,8 @@ export default function LogForm() {
     water_cups: '',
     worked_out: false,
     steps: '',
+    screen_time: '',
+    minutes_walked: '',
     notes: '',
   });
 
@@ -137,6 +202,8 @@ export default function LogForm() {
           water_cups: data.water_cups ?? '',
           worked_out: data.worked_out ?? false,
           steps: data.steps ?? '',
+          screen_time: data.screen_time ?? '',
+          minutes_walked: data.minutes_walked ?? '',
           notes: data.notes ?? '',
         });
         setIsEditing(true);
@@ -196,6 +263,8 @@ export default function LogForm() {
           mood: form.mood || null,
           water_cups: form.water_cups || null,
           steps: form.steps || null,
+          screen_time: form.screen_time || null,
+          minutes_walked: form.minutes_walked || null,
         }),
       });
       if (!res.ok) throw new Error();
@@ -210,7 +279,7 @@ export default function LogForm() {
 
   return (
     <form onSubmit={submit}>
-      <style>{BARREL_ROLL_CSS}</style>
+      <style>{TOOLTIP_CSS}{BARREL_ROLL_CSS}</style>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <label style={field.label}>Date</label>
@@ -237,9 +306,9 @@ export default function LogForm() {
             alignItems: 'center',
             justifyContent: 'space-between',
             height: 22,
-            marginBottom: 4
+            marginBottom: 2
           }}>
-            <span style={field.label}>Weight</span>
+            <span style={field.label}>Weight <Tip text="First thing in the morning, before eating" /></span>
             <div style={{
               display: 'flex',
               background: '#1e293b',
@@ -262,14 +331,7 @@ export default function LogForm() {
           />
         </div>
         <div style={field.half}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            height: 22,
-            marginBottom: 4
-          }}>
-            <span style={field.label}>Sleep (hrs)</span>
-          </div>
+          <span style={field.label}>Sleep (hrs) <Tip text="Total hours slept last night" /></span>
           <input
             type="number"
             step="0.5"
@@ -281,19 +343,45 @@ export default function LogForm() {
         </div>
       </div>
 
-      <div>
-        <label style={field.label}>Steps</label>
-        <input
-          type="number"
-          placeholder="-"
-          style={field.input}
-          value={form.steps}
-          onChange={(e) => set('steps', e.target.value)}
-        />
+      <div style={field.row}>
+        <div style={field.half}>
+          <label style={field.label}>Steps <Tip text="From your phone's step counter" /></label>
+          <input
+            type="number"
+            placeholder="—"
+            style={field.input}
+            value={form.steps}
+            onChange={(e) => set('steps', e.target.value)}
+          />
+        </div>
+        <div style={field.half}>
+          <span style={field.label}>Walk Time <span style={{ fontSize: 11, color: '#475569', fontWeight: 400 }}>mins</span> <Tip text="Intentional walking only" /></span>
+          <input
+            type="number"
+            placeholder="—"
+            style={field.input}
+            value={form.minutes_walked}
+            onChange={(e) => set('minutes_walked', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div style={field.row}>
+        <div style={field.half}>
+          <span style={field.label}>Screen Time <span style={{ fontSize: 11, color: '#475569', fontWeight: 400 }}>hrs</span> <Tip text="Settings → Digital Wellbeing" /></span>
+          <input
+            type="number"
+            step="0.5"
+            placeholder="—"
+            style={field.input}
+            value={form.screen_time}
+            onChange={(e) => set('screen_time', e.target.value)}
+          />
+        </div>
       </div>
 
       <div>
-        <label style={field.label}>Mood</label>
+        <label style={field.label}>Mood <Tip text="How you feel overall today" /></label>
         <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
           {[
             { value: 1, emoji: '😞', label: 'Rough' },
@@ -322,13 +410,13 @@ export default function LogForm() {
           gap: 6,
           marginBottom: 4
         }}>
-          <span style={field.label}>Water</span>
+          <span style={field.label}>Water <Tip text="Based on your Owala bottle (24 oz / 710 ml)" /></span>
           <span style={{ fontSize: 11, color: '#475569' }}>bottles · 24 oz / 710 ml each</span>
         </div>
         <input
           type="number"
           step="0.5"
-          placeholder="Based on Owala Bottle"
+          placeholder="—"
           style={field.input}
           value={form.water_cups}
           onChange={(e) => set('water_cups', e.target.value)}

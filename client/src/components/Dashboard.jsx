@@ -60,7 +60,7 @@ const HEIGHT_IN = 70;
 
 const BMI_RANGES = [
   { label: 'Underweight', max: 18.5, color: '#60a5fa' },
-  { label: 'Normal', max: 25, color: '#4ade80' },
+  { label: 'Healthy', max: 25, color: '#4ade80' },
   { label: 'Overweight', max: 30, color: '#fbbf24' },
   { label: 'Obese', max: 999, color: '#f87171' },
 ];
@@ -137,6 +137,17 @@ export default function Dashboard() {
 
   const workoutDays = logs.filter((r) => r.worked_out).length;
   const latestWeight = logs.find((r) => r.weight)?.weight;
+
+  // Calories via MET formula: MET × weight_kg × hours_walked
+  // MET 3.5 = casual walking pace
+  function calcCalories(minutesWalked, weightLbs) {
+    if (!minutesWalked || !weightLbs) return null;
+    const weightKg = parseFloat(weightLbs) * 0.453592;
+    const hours = parseInt(minutesWalked) / 60;
+    return Math.round(3.5 * weightKg * hours);
+  }
+  const todayLog = logs[0]; // most recent
+  const todayCalories = calcCalories(todayLog?.minutes_walked, todayLog?.weight);
   const currentBMI = calcBMI(latestWeight);
   const bmiCategory = currentBMI ? getBMICategory(parseFloat(currentBMI)) : null;
 
@@ -159,6 +170,18 @@ export default function Dashboard() {
         <div style={stat}>
           <div style={statVal}>{workoutDays}</div>
           <div style={statLbl}>Workouts</div>
+        </div>
+        <div style={stat}>
+          <div style={statVal}>{todayCalories ?? '—'}</div>
+          <div style={statLbl}>Cal (today)</div>
+        </div>
+      </div>
+
+      <div style={{ ...card, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={label}>Screen Time <span style={{ color: '#475569', fontSize: 11, fontWeight: 400, textTransform: 'none' }}>· today</span></div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: '#38bdf8' }}>{todayLog?.screen_time ?? '—'}</span>
+          {todayLog?.screen_time && <span style={{ fontSize: 13, color: '#64748b' }}>hrs</span>}
         </div>
       </div>
 
@@ -220,7 +243,11 @@ export default function Dashboard() {
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={['auto', 'auto']} unit={weightUnit === 'kg' ? 'k' : ''} />
+            <YAxis tick={{
+              fill: '#64748b',
+              fontSize: 11
+            }} domain={['auto', 'auto']}
+            />
             <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} ${weightUnit}`]} />
             <Line type="monotone" dataKey="weight" stroke="#38bdf8" dot={false} strokeWidth={2} connectNulls />
           </LineChart>
