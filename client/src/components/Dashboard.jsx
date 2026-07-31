@@ -59,9 +59,9 @@ const HEIGHT_IN = 70;
 
 const BMI_RANGES = [
   { label: 'Underweight', max: 18.5, color: '#60a5fa' },
-  { label: 'Normal',      max: 25,   color: '#4ade80' },
-  { label: 'Overweight',  max: 30,   color: '#fbbf24' },
-  { label: 'Obese',       max: 999,  color: '#f87171' },
+  { label: 'Normal', max: 25, color: '#4ade80' },
+  { label: 'Overweight', max: 30, color: '#fbbf24' },
+  { label: 'Obese', max: 999, color: '#f87171' },
 ];
 
 function calcBMI(weightLbs) {
@@ -107,7 +107,7 @@ function streak(logs) {
 export default function Dashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [weightUnit, setWeightUnit] = useState('lbs');
+  const [weightUnit, setWeightUnit] = useState('kg');
 
   useEffect(() => {
     fetch('/api/logs')
@@ -126,7 +126,7 @@ export default function Dashboard() {
   };
 
   const chartData = [...logs].reverse().map((r) => ({
-    date: (() => { const [y,m,d] = r.log_date.slice(0,10).split('-'); return `${m}/${d}/${y}`; })(),
+    date: (() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })(),
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
     mood: r.mood,
@@ -210,8 +210,8 @@ export default function Dashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={label}>Weight</div>
           <div style={{ display: 'flex', background: '#0f172a', borderRadius: 6, padding: 2 }}>
-            <button style={unitToggle(weightUnit === 'lbs')} onClick={() => setWeightUnit('lbs')}>lbs</button>
             <button style={unitToggle(weightUnit === 'kg')} onClick={() => setWeightUnit('kg')}>kg</button>
+            <button style={unitToggle(weightUnit === 'lbs')} onClick={() => setWeightUnit('lbs')}>lbs</button>
           </div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
@@ -275,7 +275,7 @@ export default function Dashboard() {
               fontSize: 14,
             }}
           >
-            <span style={{ color: '#94a3b8' }}>{(() => { const [y,m,d] = r.log_date.slice(0,10).split('-'); return `${m}/${d}/${y}`; })()}</span>
+            <span style={{ color: '#94a3b8' }}>{(() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })()}</span>
             <span>{r.weight ? `${toDisplayWeight(r.weight)} ${weightUnit}` : '—'}</span>
             <span>{r.sleep_hours ? `${r.sleep_hours}h` : '—'}</span>
             <span>{r.mood ? MOOD_LABELS[r.mood] : '—'}</span>
