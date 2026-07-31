@@ -126,7 +126,7 @@ export default function Dashboard() {
   };
 
   const chartData = [...logs].reverse().map((r) => ({
-    date: r.log_date.slice(5),
+    date: (() => { const [y,m,d] = r.log_date.slice(0,10).split('-'); return `${m}/${d}/${y}`; })(),
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
     mood: r.mood,
@@ -275,7 +275,7 @@ export default function Dashboard() {
               fontSize: 14,
             }}
           >
-            <span style={{ color: '#94a3b8' }}>{r.log_date}</span>
+            <span style={{ color: '#94a3b8' }}>{(() => { const [y,m,d] = r.log_date.slice(0,10).split('-'); return `${m}/${d}/${y}`; })()}</span>
             <span>{r.weight ? `${toDisplayWeight(r.weight)} ${weightUnit}` : '—'}</span>
             <span>{r.sleep_hours ? `${r.sleep_hours}h` : '—'}</span>
             <span>{r.mood ? MOOD_LABELS[r.mood] : '—'}</span>
