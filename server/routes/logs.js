@@ -33,22 +33,24 @@ router.get('/:date', async (req, res) => {
 
 // POST /api/logs — create or update (upsert by date)
 router.post('/', async (req, res) => {
-  const { log_date, weight, sleep_hours, mood, water_cups, worked_out, steps, notes } = req.body;
+  const { log_date, weight, sleep_hours, mood, water_cups, worked_out, steps, screen_time, minutes_walked, notes } = req.body;
   try {
     const { rows } = await pool.query(
-      `INSERT INTO daily_logs (log_date, weight, sleep_hours, mood, water_cups, worked_out, steps, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO daily_logs (log_date, weight, sleep_hours, mood, water_cups, worked_out, steps, screen_time, minutes_walked, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        ON CONFLICT (log_date) DO UPDATE SET
-         weight      = EXCLUDED.weight,
-         sleep_hours = EXCLUDED.sleep_hours,
-         mood        = EXCLUDED.mood,
-         water_cups  = EXCLUDED.water_cups,
-         worked_out  = EXCLUDED.worked_out,
-         steps       = EXCLUDED.steps,
-         notes       = EXCLUDED.notes,
-         updated_at  = NOW()
+         weight         = EXCLUDED.weight,
+         sleep_hours    = EXCLUDED.sleep_hours,
+         mood           = EXCLUDED.mood,
+         water_cups     = EXCLUDED.water_cups,
+         worked_out     = EXCLUDED.worked_out,
+         steps          = EXCLUDED.steps,
+         screen_time    = EXCLUDED.screen_time,
+         minutes_walked = EXCLUDED.minutes_walked,
+         notes          = EXCLUDED.notes,
+         updated_at     = NOW()
        RETURNING *`,
-      [log_date, weight, sleep_hours, mood, water_cups, worked_out, steps, notes]
+      [log_date, weight, sleep_hours, mood, water_cups, worked_out, steps, screen_time, minutes_walked, notes]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
