@@ -1,6 +1,6 @@
 {
   "name": "health-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "cd client && npm install && npm run build",
     "start": "cd server && npm install && node index.js"
