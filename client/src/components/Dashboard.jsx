@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
-} from 'recharts';
+}
+  from 'recharts';
 
 const SLEEP_MIN = 6;
 const SLEEP_MAX = 9;
@@ -117,7 +118,8 @@ export default function Dashboard() {
   }, []);
 
   if (loading) return <p style={{ color: '#94a3b8' }}>Loading...</p>;
-  if (!logs.length) return <p style={{ color: '#94a3b8' }}>No data yet — start logging!</p>;
+  if (!logs.length)
+    return <p style={{ color: '#94a3b8' }}>No data yet — start logging!</p>;
 
   const toDisplayWeight = (lbs) => {
     if (lbs == null) return null;
