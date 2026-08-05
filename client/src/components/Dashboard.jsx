@@ -52,7 +52,6 @@ const statLbl = {
   marginTop: 2,
 };
 
-const MOOD_LABELS = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 const LBS_TO_KG = 0.453592;
 
 // Height: 5'10" = 70 inches
@@ -131,7 +130,7 @@ export default function Dashboard() {
     date: (() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })(),
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
-    mood: r.mood,
+    steps: r.steps ? parseInt(r.steps) : null,
     water: r.water_cups,
   }));
 
@@ -162,10 +161,6 @@ export default function Dashboard() {
         <div style={stat}>
           <div style={statVal}>{avg(logs, 'sleep_hours')}</div>
           <div style={statLbl}>Avg Sleep (hrs)</div>
-        </div>
-        <div style={stat}>
-          <div style={statVal}>{avg(logs, 'mood')}</div>
-          <div style={statLbl}>Avg Mood</div>
         </div>
         <div style={stat}>
           <div style={statVal}>{workoutDays}</div>
@@ -278,14 +273,17 @@ export default function Dashboard() {
       </div>
 
       <div style={card}>
-        <div style={label}>Mood</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={label}>Steps</div>
+          <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(logs, 'steps').toLocaleString?.() ?? avg(logs, 'steps')} / day</div>
+        </div>
         <ResponsiveContainer width="100%" height={160}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} />
-            <Line type="monotone" dataKey="mood" stroke="#4ade80" dot={false} strokeWidth={2} connectNulls />
+            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
+            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v.toLocaleString()} steps`]} />
+            <Line type="monotone" dataKey="steps" stroke="#fb923c" dot={false} strokeWidth={2} connectNulls />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -307,7 +305,7 @@ export default function Dashboard() {
             <span style={{ color: '#94a3b8' }}>{(() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })()}</span>
             <span>{r.weight ? `${toDisplayWeight(r.weight)} ${weightUnit}` : '—'}</span>
             <span>{r.sleep_hours ? `${r.sleep_hours}h` : '—'}</span>
-            <span>{r.mood ? MOOD_LABELS[r.mood] : '—'}</span>
+            <span>{r.steps ? r.steps.toLocaleString() : '—'}</span>
             <span>{r.worked_out ? '🏋️' : '—'}</span>
           </div>
         ))}
