@@ -1,5 +1,28 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+const NAV_BTN_CSS = `
+.nav-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #38bdf8;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.08s, box-shadow 0.1s, background 0.1s;
+  box-shadow: 0 4px 0 #0284c7;
+}
+.nav-btn:hover {
+  background: #7dd3fc;
+}
+.nav-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0px 0 #0284c7;
+}
+`;
+
 const TOOLTIP_CSS = `
 @keyframes tipIn {
   0%   
@@ -267,7 +290,7 @@ export default function LogForm() {
 
   return (
     <form onSubmit={submit}>
-      <style>{TOOLTIP_CSS}{BARREL_ROLL_CSS}</style>
+      <style>{NAV_BTN_CSS}{TOOLTIP_CSS}{BARREL_ROLL_CSS}</style>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <label style={field.label}>Date</label>
@@ -277,13 +300,33 @@ export default function LogForm() {
             </span>
           )}
         </div>
-        <input
-          type="date"
-          style={field.input}
-          value={form.log_date}
-          onChange={(e) => loadDate(e.target.value)}
-          required
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date(form.log_date + 'T12:00:00');
+              d.setDate(d.getDate() - 1);
+              loadDate(d.toISOString().split('T')[0]);
+            }}
+            className="nav-btn"
+          >‹</button>
+          <input
+            type="date"
+            style={{ ...field.input, marginBottom: 0, flex: 1, textAlign: 'center' }}
+            value={form.log_date}
+            onChange={(e) => loadDate(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date(form.log_date + 'T12:00:00');
+              d.setDate(d.getDate() + 1);
+              loadDate(d.toISOString().split('T')[0]);
+            }}
+            className="nav-btn"
+          >›</button>
+        </div>
       </div>
 
       <div style={field.row}>
