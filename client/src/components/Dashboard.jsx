@@ -126,7 +126,11 @@ export default function Dashboard() {
     return parseFloat(val.toFixed(1));
   };
 
-  const chartData = [...logs].reverse().map((r) => ({
+  const filledLogs = logs.filter((r) =>
+    r.weight || r.sleep_hours || r.steps || r.minutes_walked || r.screen_time || r.water_cups || r.worked_out
+  );
+
+  const chartData = [...filledLogs].reverse().map((r) => ({
     date: (() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })(),
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
@@ -137,8 +141,8 @@ export default function Dashboard() {
     water: r.water_cups,
   }));
 
-  const workoutDays = logs.filter((r) => r.worked_out).length;
-  const latestWeight = logs.find((r) => r.weight)?.weight;
+  const workoutDays = filledLogs.filter((r) => r.worked_out).length;
+  const latestWeight = filledLogs.find((r) => r.weight)?.weight;
 
   // Calories via MET formula: MET × weight_kg × hours_walked
   // MET 3.5 = casual walking pace
@@ -148,7 +152,7 @@ export default function Dashboard() {
     const hours = parseInt(minutesWalked) / 60;
     return Math.round(3.5 * weightKg * hours);
   }
-  const todayLog = logs[0]; // most recent
+  const todayLog = filledLogs[0]; // most recent
   const todayCalories = calcCalories(todayLog?.minutes_walked, todayLog?.weight);
   const currentBMI = calcBMI(latestWeight);
   const bmiCategory = currentBMI ? getBMICategory(parseFloat(currentBMI)) : null;
@@ -162,7 +166,7 @@ export default function Dashboard() {
     <div>
       <div style={statRow}>
         <div style={stat}>
-          <div style={statVal}>{avg(logs, 'sleep_hours')}</div>
+          <div style={statVal}>{avg(filledLogs, 'sleep_hours')}</div>
           <div style={statLbl}>Avg Sleep (hrs)</div>
         </div>
         <div style={stat}>
@@ -278,7 +282,7 @@ export default function Dashboard() {
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={label}>Steps</div>
-          <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(logs, 'steps').toLocaleString?.() ?? avg(logs, 'steps')} / day</div>
+          <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(filledLogs, 'steps').toLocaleString?.() ?? avg(filledLogs, 'steps')} / day</div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
           <LineChart data={chartData}>
@@ -309,7 +313,7 @@ export default function Dashboard() {
 
       <div style={card}>
         <div style={label}>Recent logs</div>
-        {logs.slice(0, 7).map((r) => (
+        {filledLogs.slice(0, 7).map((r) => (
           <div
             key={r.log_date}
             style={{
