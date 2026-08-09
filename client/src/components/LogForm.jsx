@@ -110,19 +110,7 @@ const field = {
     fontSize: 12,
     cursor: 'pointer',
   }),
-  moodBtn: (active) => ({
-    flex: 1,
-    padding: '10px 4px',
-    borderRadius: 8,
-    border: '1px solid #1e293b',
-    background: active ? '#38bdf8' : '#1e293b',
-    color: active ? '#0f172a' : '#94a3b8',
-    fontWeight: 700,
-    fontSize: 11,
-    cursor: 'pointer',
-    lineHeight: 1.3,
-    textAlign: 'center',
-  }),
+
   workoutBtn: (active) => ({
     width: '100%',
     padding: '12px',
@@ -171,7 +159,7 @@ export default function LogForm() {
     minutes_walked: '',
     notes: '',
   });
-  const [weightUnit, setWeightUnit] = useState('lbs'); // 'lbs' | 'kg'
+  const [weightUnit, setWeightUnit] = useState('kg'); // 'lbs' | 'kg'
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -315,10 +303,11 @@ export default function LogForm() {
               borderRadius: 6,
               padding: 2
             }}>
-              <button type="button" style={field.unitToggle(weightUnit === 'lbs')}
-                onClick={() => setWeightUnit('lbs')}>lbs</button>
               <button type="button" style={field.unitToggle(weightUnit === 'kg')}
                 onClick={() => setWeightUnit('kg')}>kg</button>
+              <button type="button" style={field.unitToggle(weightUnit === 'lbs')}
+                onClick={() => setWeightUnit('lbs')}>lbs</button>
+
             </div>
           </div>
           <input
@@ -377,29 +366,6 @@ export default function LogForm() {
             value={form.screen_time}
             onChange={(e) => set('screen_time', e.target.value)}
           />
-        </div>
-      </div>
-
-      <div>
-        <label style={field.label}>Mood <Tip text="How you feel overall today" /></label>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-          {[
-            { value: 1, emoji: '😞', label: 'Rough' },
-            { value: 2, emoji: '😕', label: 'Meh' },
-            { value: 3, emoji: '😐', label: 'Okay' },
-            { value: 4, emoji: '🙂', label: 'Good' },
-            { value: 5, emoji: '😄', label: 'Great' },
-          ].map(({ value, emoji, label }) => (
-            <button
-              type="button"
-              key={value}
-              style={field.moodBtn(form.mood === value)}
-              onClick={() => set('mood', value)}
-            >
-              <div style={{ fontSize: 20 }}>{emoji}</div>
-              <div>{label}</div>
-            </button>
-          ))}
         </div>
       </div>
 
