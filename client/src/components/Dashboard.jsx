@@ -131,6 +131,9 @@ export default function Dashboard() {
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
     steps: r.steps ? parseInt(r.steps) : null,
+    calories: (r.minutes_walked && r.weight)
+      ? Math.round(3.5 * (parseFloat(r.weight) * 0.453592) * (parseInt(r.minutes_walked) / 60))
+      : null,
     water: r.water_cups,
   }));
 
@@ -284,6 +287,22 @@ export default function Dashboard() {
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
             <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v.toLocaleString()} steps`]} />
             <Line type="monotone" dataKey="steps" stroke="#fb923c" dot={false} strokeWidth={2} connectNulls />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div style={card}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={label}>Calories Burned</div>
+          <div style={{ fontSize: 11, color: '#64748b' }}>walking · MET 3.5</div>
+        </div>
+        <ResponsiveContainer width="100%" height={160}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
+            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} kcal`]} />
+            <Line type="monotone" dataKey="calories" stroke="#f472b6" dot={false} strokeWidth={2} connectNulls />
           </LineChart>
         </ResponsiveContainer>
       </div>
