@@ -256,28 +256,7 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </div>
 
-      <div style={card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={label}>Sleep (hrs)</div>
-          <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#64748b' }}>
-            <span><span style={{ color: '#86efac' }}>―</span> Goal {SLEEP_GOAL}h</span>
-            <span><span style={{ color: '#334155' }}>▭</span> Range {SLEEP_MIN}–{SLEEP_MAX}h</span>
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 12]} />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} />
-            {/* Ideal range shading */}
-            <ReferenceArea y1={SLEEP_MIN} y2={SLEEP_MAX} fill="#1e3a2f" fillOpacity={0.6} />
-            {/* Goal line */}
-            <ReferenceLine y={SLEEP_GOAL} stroke="#86efac" strokeDasharray="4 3" strokeWidth={1.5} />
-            <Line type="monotone" dataKey="sleep" stroke="#a78bfa" dot={false} strokeWidth={2} connectNulls />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+
 
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -310,7 +289,28 @@ export default function Dashboard() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-
+      <div style={card}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={label}>Sleep (hrs)</div>
+          <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#64748b' }}>
+            <span><span style={{ color: '#86efac' }}>―</span> Goal {SLEEP_GOAL}h</span>
+            <span><span style={{ color: '#334155' }}>▭</span> Range {SLEEP_MIN}–{SLEEP_MAX}h</span>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={160}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 12]} />
+            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} />
+            {/* Ideal range shading */}
+            <ReferenceArea y1={SLEEP_MIN} y2={SLEEP_MAX} fill="#1e3a2f" fillOpacity={0.6} />
+            {/* Goal line */}
+            <ReferenceLine y={SLEEP_GOAL} stroke="#86efac" strokeDasharray="4 3" strokeWidth={1.5} />
+            <Line type="monotone" dataKey="sleep" stroke="#a78bfa" dot={false} strokeWidth={2} connectNulls />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
       <div style={card}>
         <div style={label}>Recent logs</div>
         {filledLogs.slice(0, 7).map((r) => (
