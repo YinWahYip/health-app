@@ -207,7 +207,11 @@ export default function LogForm() {
         const data = await res.json();
         setForm({
           log_date: date,
-          weight: data.weight ?? '',
+          weight: data.weight
+            ? weightUnit === 'kg'
+              ? (parseFloat(data.weight) / KG_TO_LBS).toFixed(1)
+              : data.weight
+            : '',
           sleep_hours: data.sleep_hours ?? '',
           mood: data.mood ?? '',
           water_cups: data.water_cups ?? '',
@@ -226,7 +230,7 @@ export default function LogForm() {
       setForm(EMPTY_FORM(date));
       setIsEditing(false);
     }
-  }, []);
+  }, [weightUnit]);
 
   // Load today's log on mount
   useEffect(() => { loadDate(today()); }, [loadDate]);
