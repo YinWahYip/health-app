@@ -104,6 +104,20 @@ function streak(logs) {
   return count;
 }
 
+function walkingStreak(logs) {
+  // logs sorted newest first
+  let count = 0;
+  let d = new Date();
+  for (const log of logs) {
+    const logD = new Date(log.log_date);
+    const diff = Math.round((d - logD) / 86400000);
+    if (diff > 1) break;
+    if (log.minutes_walked && parseInt(log.minutes_walked) > 0) count++;
+    d = logD;
+  }
+  return count;
+}
+
 export default function Dashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -142,6 +156,7 @@ export default function Dashboard() {
   }));
 
   const workoutDays = filledLogs.filter((r) => r.worked_out).length;
+  const walkStreak = walkingStreak(filledLogs);
   const latestWeight = filledLogs.find((r) => r.weight)?.weight;
 
   // Calories via MET formula: MET × weight_kg × hours_walked
@@ -176,6 +191,10 @@ export default function Dashboard() {
         <div style={stat}>
           <div style={statVal}>{todayCalories ?? '—'}</div>
           <div style={statLbl}>Cal (today)</div>
+        </div>
+        <div style={stat}>
+          <div style={statVal}>{walkStreak > 0 ? `${walkStreak}🔥` : '—'}</div>
+          <div style={statLbl}>Walk streak</div>
         </div>
       </div>
 

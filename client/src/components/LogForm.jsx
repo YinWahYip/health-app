@@ -234,6 +234,7 @@ export default function LogForm() {
 
   // Load today's log on mount
   useEffect(() => { loadDate(today()); }, [loadDate]);
+  const [confirmEdit, setConfirmEdit] = useState(false);
   const [rolling, setRolling] = useState(false);
   const [confetti, setConfetti] = useState([]);
   const workoutBtnRef = useRef(null);
@@ -257,6 +258,11 @@ export default function LogForm() {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (isEditing && !confirmEdit) {
+      setConfirmEdit(true);
+      return;
+    }
+    setConfirmEdit(false);
     setLoading(true);
     setStatus(null);
 
@@ -472,9 +478,34 @@ export default function LogForm() {
         />
       </div>
 
-      <button type="submit" style={field.submit} disabled={loading}>
-        {loading ? 'Saving...' : 'Save'}
-      </button>
+      {confirmEdit && (
+        <div style={{ marginBottom: 12, padding: '12px 14px', borderRadius: 8, background: '#451a03', border: '1px solid #92400e' }}>
+          <div style={{ color: '#fde68a', fontSize: 14, marginBottom: 10, fontWeight: 600 }}>
+            Overwrite existing entry for {form.log_date}?
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="submit"
+              style={{ ...field.submit, marginBottom: 0, flex: 1, background: '#b45309' }}
+            >
+              Yes, overwrite
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmEdit(false)}
+              style={{ ...field.submit, marginBottom: 0, flex: 1, background: '#1e293b', color: '#94a3b8' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!confirmEdit && (
+        <button type="submit" style={field.submit} disabled={loading}>
+          {loading ? 'Saving...' : 'Save'}
+        </button>
+      )}
 
       {status && (
         <div style={field.status(status === 'ok')}>
