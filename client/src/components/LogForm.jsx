@@ -258,7 +258,7 @@ export default function LogForm() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (isEditing && !confirmEdit) {
+    if (isEditing && form.log_date !== today() && !confirmEdit) {
       setConfirmEdit(true);
       return;
     }
