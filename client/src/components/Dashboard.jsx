@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { DATE_RANGES, filterLogsByRange, getDateRange } from './dateRange.js';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
@@ -122,6 +123,7 @@ export default function Dashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [weightUnit, setWeightUnit] = useState('kg');
+  const [dateRange, setDateRange] = useState('month');
 
   useEffect(() => {
     fetch('/api/logs')
@@ -143,8 +145,14 @@ export default function Dashboard() {
   const filledLogs = logs.filter((r) =>
     r.weight || r.sleep_hours || r.steps || r.minutes_walked || r.screen_time || r.water_cups || r.worked_out
   );
+  const selectedRange = getDateRange(dateRange);
+  const rangeLogs = filterLogsByRange(filledLogs, selectedRange);
+  const formatDate = (date) => {
+    const [year, month, day] = date.split('-');
+    return `${month}/${day}/${year}`;
+  };
 
-  const chartData = [...filledLogs].reverse().map((r) => ({
+  const chartData = [...rangeLogs].reverse().map((r) => ({
     date: (() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })(),
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
@@ -155,7 +163,7 @@ export default function Dashboard() {
     water: r.water_cups,
   }));
 
-  const workoutDays = filledLogs.filter((r) => r.worked_out).length;
+  const workoutDays = rangeLogs.filter((r) => r.worked_out).length;
   const walkStreak = walkingStreak(filledLogs);
   const latestWeight = filledLogs.find((r) => r.weight)?.weight;
 
@@ -179,9 +187,29 @@ export default function Dashboard() {
 
   return (
     <div>
+      <div style={card}>
+        <div id="date-range-label" style={label}>Past period</div>
+        <div role="group" aria-labelledby="date-range-label" style={{ display: 'flex', gap: 4, background: '#0f172a', borderRadius: 8, padding: 4 }}>
+          {DATE_RANGES.map((range) => (
+            <button
+              key={range.value}
+              type="button"
+              aria-pressed={dateRange === range.value}
+              onClick={() => setDateRange(range.value)}
+              style={{ ...unitToggle(dateRange === range.value), flex: 1, minHeight: 36, color: dateRange === range.value ? '#0f172a' : '#94a3b8' }}
+            >
+              {range.label}
+            </button>
+          ))}
+        </div>
+        <div aria-live="polite" style={{ ...statLbl, marginTop: 10 }}>
+          {formatDate(selectedRange.start)} – {formatDate(selectedRange.end)} · {rangeLogs.length} logged days
+        </div>
+        <div style={{ ...statLbl, marginTop: 6 }}>Applies to charts, averages, workouts, and recent logs.</div>
+      </div>
       <div style={statRow}>
         <div style={stat}>
-          <div style={statVal}>{avg(filledLogs, 'sleep_hours')}</div>
+          <div style={statVal}>{avg(rangeLogs, 'sleep_hours')}</div>
           <div style={statLbl}>Avg Sleep (hrs)</div>
         </div>
         <div style={stat}>
@@ -252,6 +280,10 @@ export default function Dashboard() {
         </div>
       )}
 
+      {!rangeLogs.length && (
+        <p role="status" style={{ color: '#94a3b8' }}>No data for this period. Select a longer range or add a log.</p>
+      )}
+
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={label}>Weight</div>
@@ -280,7 +312,7 @@ export default function Dashboard() {
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={label}>Steps</div>
-          <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(filledLogs, 'steps').toLocaleString?.() ?? avg(filledLogs, 'steps')} / day</div>
+          <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(rangeLogs, 'steps').toLocaleString?.() ?? avg(rangeLogs, 'steps')} / day</div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
           <LineChart data={chartData}>
@@ -332,7 +364,7 @@ export default function Dashboard() {
       </div>
       <div style={card}>
         <div style={label}>Recent logs</div>
-        {filledLogs.slice(0, 7).map((r) => (
+        {rangeLogs.slice(0, 7).map((r) => (
           <div
             key={r.log_date}
             style={{

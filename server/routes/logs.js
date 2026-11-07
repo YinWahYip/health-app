@@ -3,13 +3,13 @@ import pool from '../db.js';
 
 const router = Router();
 
-// GET /api/logs — last 30 days
+// GET /api/logs — enough daily entries for a full year, including leap years
 router.get('/', async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT * FROM daily_logs
        ORDER BY log_date DESC
-       LIMIT 30`
+       LIMIT 366`
     );
     res.json(rows);
   } catch (err) {
