@@ -1,3 +1,5 @@
+import { today } from './calendarDate.js';
+
 export const DATE_RANGES = [
   { value: 'week', label: 'Week', days: 7 },
   { value: 'month', label: 'Month', months: 1 },
@@ -5,10 +7,10 @@ export const DATE_RANGES = [
   { value: 'year', label: 'Year', months: 12 },
 ];
 
-// Use local calendar dates, rather than UTC timestamps, to match daily logs.
+// Anchor every range to the same Central Time date used by the log form.
 export function getDateRange(value, now = new Date()) {
   const range = DATE_RANGES.find((option) => option.value === value);
-  const end = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const end = new Date(`${today(now)}T00:00:00Z`);
   const start = new Date(end);
 
   if (range.days) {

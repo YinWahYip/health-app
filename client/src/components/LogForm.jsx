@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { shiftDate, today } from './calendarDate.js';
 
 const NAV_BTN_CSS = `
 .nav-btn {
@@ -53,11 +54,6 @@ const BARREL_ROLL_CSS = `
   animation: popOut 0.65s ease-out forwards;
 }
 `;
-
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
 
 const KG_TO_LBS = 2.20462;
 
@@ -306,7 +302,7 @@ export default function LogForm() {
       <style>{NAV_BTN_CSS}{TOOLTIP_CSS}{BARREL_ROLL_CSS}</style>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <label style={field.label}>Date</label>
+          <label style={field.label}>Date · Central Time</label>
           {isEditing && (
             <span style={{ fontSize: 11, background: '#854d0e', color: '#fef08a', borderRadius: 4, padding: '2px 7px', fontWeight: 600 }}>
               Editing existing
@@ -317,9 +313,7 @@ export default function LogForm() {
           <button
             type="button"
             onClick={() => {
-              const d = new Date(form.log_date + 'T12:00:00');
-              d.setDate(d.getDate() - 1);
-              loadDate(d.toISOString().split('T')[0]);
+              loadDate(shiftDate(form.log_date, -1));
             }}
             className="nav-btn"
           >‹</button>
@@ -333,9 +327,7 @@ export default function LogForm() {
           <button
             type="button"
             onClick={() => {
-              const d = new Date(form.log_date + 'T12:00:00');
-              d.setDate(d.getDate() + 1);
-              loadDate(d.toISOString().split('T')[0]);
+              loadDate(shiftDate(form.log_date, 1));
             }}
             className="nav-btn"
           >›</button>

@@ -207,7 +207,7 @@ export default function Dashboard() {
         <div aria-live="polite" style={{ ...statLbl, marginTop: 10 }}>
           {formatDate(selectedRange.start)} – {formatDate(selectedRange.end)} · {rangeLogs.length} logged days
         </div>
-        <div style={{ ...statLbl, marginTop: 6 }}>Applies to charts, averages, workouts, and recent logs.</div>
+        <div style={{ ...statLbl, marginTop: 6 }}>Central Time · Applies to charts, averages, workouts, and recent logs.</div>
       </div>
       <div style={statRow}>
         <div style={stat}>

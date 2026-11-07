@@ -28,7 +28,7 @@ test('empty history leaves all weekdays without an average', () => {
 
 for (const { value } of DATE_RANGES) {
   test(`${value} averages only entries inside the selected period`, () => {
-    const range = getDateRange(value, new Date(2026, 10, 7));
+    const range = getDateRange(value, new Date(Date.UTC(2026, 10, 7, 18)));
     const days = averageStepsByWeekday(filterLogsByRange([
       { log_date: '2026-11-02', steps: 2000 },
       { log_date: '2020-11-02', steps: 9000 },
