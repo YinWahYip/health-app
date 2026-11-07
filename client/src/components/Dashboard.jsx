@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DATE_RANGES, fillDateRange, filterLogsByRange, getDateRange } from './dateRange.js';
+import { averageStepsByWeekday } from './weekdaySteps.js';
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip,
+  LineChart, Line, BarChart, Bar, LabelList, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
 }
   from 'recharts';
@@ -143,10 +144,11 @@ export default function Dashboard() {
   };
 
   const filledLogs = logs.filter((r) =>
-    r.weight || r.sleep_hours || r.steps || r.minutes_walked || r.screen_time || r.water_cups || r.worked_out
+    r.weight || r.sleep_hours || (r.steps != null && r.steps !== '') || r.minutes_walked || r.screen_time || r.water_cups || r.worked_out
   );
   const selectedRange = getDateRange(dateRange);
   const rangeLogs = filterLogsByRange(filledLogs, selectedRange);
+  const weekdaySteps = averageStepsByWeekday(rangeLogs);
   const formatDate = (date) => {
     const [year, month, day] = date.split('-');
     return `${month}/${day}/${year}`;
@@ -323,6 +325,35 @@ export default function Dashboard() {
             <Line type="linear" dataKey="steps" stroke="#fb923c" dot={{ r: 2 }} strokeWidth={2} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      <div style={card}>
+        <div style={label}>Average steps by weekday</div>
+        <div style={{ ...statLbl, marginBottom: 16 }}>Selected period · only days with recorded steps</div>
+        {weekdaySteps.some((day) => day.count > 0) ? (
+          <ResponsiveContainer width="100%" height={210}>
+            <BarChart data={weekdaySteps} margin={{ top: 24, right: 4, left: -12, bottom: 0 }} accessibilityLayer>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+              <XAxis dataKey="day" tickFormatter={(day) => day.slice(0, 3)} interval={0} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} allowDecimals={false} />
+              <Tooltip
+                cursor={{ fill: '#334155', fillOpacity: 0.4 }}
+                contentStyle={{ background: '#0f172a', border: 'none', color: '#f1f5f9' }}
+                labelFormatter={(day, entries) => {
+                  const count = entries?.[0]?.payload?.count;
+                  return `${day} · ${count ?? 0} recorded ${count === 1 ? 'day' : 'days'}`;
+                }}
+                formatter={(value) => [`${value.toLocaleString()} steps`, 'Average']}
+              />
+              <Bar dataKey="average" fill="#fb923c" radius={[4, 4, 0, 0]} maxBarSize={36}>
+                <LabelList dataKey="average" position="top" fill="#cbd5e1" fontSize={10} formatter={(value) => value == null ? '' : value.toLocaleString()} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p style={{ color: '#94a3b8', fontSize: 13 }}>No step entries in this period.</p>
+        )}
+        <div style={{ ...statLbl, marginTop: 8 }}>Unrecorded weekdays stay blank. Recorded zeroes count toward the average.</div>
       </div>
 
       <div style={card}>
