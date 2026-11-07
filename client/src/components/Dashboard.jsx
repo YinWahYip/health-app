@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DATE_RANGES, filterLogsByRange, getDateRange } from './dateRange.js';
+import { DATE_RANGES, fillDateRange, filterLogsByRange, getDateRange } from './dateRange.js';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
@@ -152,8 +152,8 @@ export default function Dashboard() {
     return `${month}/${day}/${year}`;
   };
 
-  const chartData = [...rangeLogs].reverse().map((r) => ({
-    date: (() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })(),
+  const chartData = fillDateRange(rangeLogs, selectedRange).map((r) => ({
+    date: r.log_date.slice(0, 10),
     weight: toDisplayWeight(r.weight),
     sleep: r.sleep_hours != null && r.sleep_hours !== '' ? parseFloat(r.sleep_hours) : null,
     steps: r.steps != null && r.steps !== '' ? parseInt(r.steps) : null,
@@ -293,16 +293,16 @@ export default function Dashboard() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.weight))}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{
               fill: '#64748b',
               fontSize: 11
             }} domain={['auto', 'auto']}
             />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} ${weightUnit}`]} />
-            <Line type="monotone" dataKey="weight" stroke="#38bdf8" dot={false} strokeWidth={2} connectNulls />
+            <Tooltip labelFormatter={formatDate} contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} ${weightUnit}`]} />
+            <Line type="linear" dataKey="weight" stroke="#38bdf8" dot={{ r: 2 }} strokeWidth={2} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -315,12 +315,12 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(rangeLogs, 'steps').toLocaleString?.() ?? avg(rangeLogs, 'steps')} / day</div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.steps))}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v.toLocaleString()} steps`]} />
-            <Line type="monotone" dataKey="steps" stroke="#fb923c" dot={false} strokeWidth={2} connectNulls />
+            <Tooltip labelFormatter={formatDate} contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v.toLocaleString()} steps`]} />
+            <Line type="linear" dataKey="steps" stroke="#fb923c" dot={{ r: 2 }} strokeWidth={2} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -331,12 +331,12 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, color: '#64748b' }}>walking · MET 3.5</div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.calories))}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} kcal`]} />
-            <Line type="monotone" dataKey="calories" stroke="#f472b6" dot={false} strokeWidth={2} connectNulls />
+            <Tooltip labelFormatter={formatDate} contentStyle={{ background: '#0f172a', border: 'none' }} formatter={(v) => [`${v} kcal`]} />
+            <Line type="linear" dataKey="calories" stroke="#f472b6" dot={{ r: 2 }} strokeWidth={2} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -349,16 +349,16 @@ export default function Dashboard() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.sleep))}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 12]} />
-            <Tooltip contentStyle={{ background: '#0f172a', border: 'none' }} />
+            <Tooltip labelFormatter={formatDate} contentStyle={{ background: '#0f172a', border: 'none' }} />
             {/* Ideal range shading */}
             <ReferenceArea y1={SLEEP_MIN} y2={SLEEP_MAX} fill="#1e3a2f" fillOpacity={0.6} />
             {/* Goal line */}
             <ReferenceLine y={SLEEP_GOAL} stroke="#86efac" strokeDasharray="4 3" strokeWidth={1.5} />
-            <Line type="monotone" dataKey="sleep" stroke="#a78bfa" dot={false} strokeWidth={2} connectNulls />
+            <Line type="linear" dataKey="sleep" stroke="#a78bfa" dot={{ r: 2 }} strokeWidth={2} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

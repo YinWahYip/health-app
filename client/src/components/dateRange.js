@@ -35,3 +35,16 @@ export function filterLogsByRange(logs, { start, end }) {
     return date >= start && date <= end;
   });
 }
+
+// Keep every calendar day so charts preserve elapsed time and break at gaps.
+export function fillDateRange(logs, { start, end }) {
+  const byDate = new Map(logs.map((log) => [log.log_date.slice(0, 10), log]));
+  const days = [];
+  const cursor = new Date(`${start}T00:00:00Z`);
+  while (cursor.toISOString().slice(0, 10) <= end) {
+    const date = cursor.toISOString().slice(0, 10);
+    days.push(byDate.get(date) ?? { log_date: date });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return days;
+}
