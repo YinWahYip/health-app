@@ -189,7 +189,15 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={card}>
+      <div style={{
+        ...card,
+        position: 'sticky',
+        top: 'max(8px, env(safe-area-inset-top))',
+        zIndex: 20,
+        padding: 12,
+        border: '1px solid #334155',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      }}>
         <div id="date-range-label" style={label}>Past period</div>
         <div role="group" aria-labelledby="date-range-label" style={{ display: 'flex', gap: 4, background: '#0f172a', borderRadius: 8, padding: 4 }}>
           {DATE_RANGES.map((range) => (
@@ -205,9 +213,8 @@ export default function Dashboard() {
           ))}
         </div>
         <div aria-live="polite" style={{ ...statLbl, marginTop: 10 }}>
-          {formatDate(selectedRange.start)} – {formatDate(selectedRange.end)} · {rangeLogs.length} logged days
+          {formatDate(selectedRange.start)} – {formatDate(selectedRange.end)} · CT · {rangeLogs.length} logged days
         </div>
-        <div style={{ ...statLbl, marginTop: 6 }}>Central Time · Applies to charts, averages, workouts, and recent logs.</div>
       </div>
       <div style={statRow}>
         <div style={stat}>
