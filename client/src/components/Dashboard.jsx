@@ -137,7 +137,7 @@ export default function Dashboard() {
     return <p style={{ color: '#94a3b8' }}>No data yet — start logging!</p>;
 
   const toDisplayWeight = (lbs) => {
-    if (lbs == null) return null;
+    if (lbs == null || lbs === '') return null;
     const val = weightUnit === 'kg' ? parseFloat(lbs) * LBS_TO_KG : parseFloat(lbs);
     return parseFloat(val.toFixed(1));
   };
@@ -155,9 +155,9 @@ export default function Dashboard() {
   const chartData = [...rangeLogs].reverse().map((r) => ({
     date: (() => { const [y, m, d] = r.log_date.slice(0, 10).split('-'); return `${m}/${d}/${y}`; })(),
     weight: toDisplayWeight(r.weight),
-    sleep: r.sleep_hours ? parseFloat(r.sleep_hours) : null,
-    steps: r.steps ? parseInt(r.steps) : null,
-    calories: (r.minutes_walked && r.weight)
+    sleep: r.sleep_hours != null && r.sleep_hours !== '' ? parseFloat(r.sleep_hours) : null,
+    steps: r.steps != null && r.steps !== '' ? parseInt(r.steps) : null,
+    calories: (r.minutes_walked != null && r.minutes_walked !== '' && r.weight)
       ? Math.round(3.5 * (parseFloat(r.weight) * 0.453592) * (parseInt(r.minutes_walked) / 60))
       : null,
     water: r.water_cups,
@@ -293,7 +293,7 @@ export default function Dashboard() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData}>
+          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.weight))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{
@@ -315,7 +315,7 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, color: '#64748b' }}>avg {avg(rangeLogs, 'steps').toLocaleString?.() ?? avg(rangeLogs, 'steps')} / day</div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData}>
+          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.steps))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
@@ -331,7 +331,7 @@ export default function Dashboard() {
           <div style={{ fontSize: 11, color: '#64748b' }}>walking · MET 3.5</div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData}>
+          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.calories))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 'auto']} />
@@ -349,7 +349,7 @@ export default function Dashboard() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={chartData}>
+          <LineChart data={chartData.filter((entry) => Number.isFinite(entry.sleep))}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} domain={[0, 12]} />
