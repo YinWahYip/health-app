@@ -418,7 +418,7 @@ export default function Dashboard() {
             <span>{r.weight ? `${toDisplayWeight(r.weight)} ${weightUnit}` : '—'}</span>
             <span>{r.sleep_hours ? `${r.sleep_hours}h` : '—'}</span>
             <span>{r.steps ? r.steps.toLocaleString() : '—'}</span>
-            <span>{r.worked_out ? '🏋️' : '—'}</span>
+            <span>{r.worked_out ? '✅' : '—'}</span>
           </div>
         ))}
       </div>
